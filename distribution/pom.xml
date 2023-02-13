@@ -1,0 +1,201 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <relativePath>../</relativePath>
+        <!--<relativePath>../pom.xml</relativePath>-->
+        <artifactId>wildfirechat-parent</artifactId>
+        <groupId>cn.wildfirechat</groupId>
+        <version>0.99</version>
+    </parent>
+
+    <artifactId>distribution</artifactId>
+    <packaging>pom</packaging>
+    <name>Moquette - distribution</name>
+
+    <!-- Includes all modules -->
+    <dependencies>
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>moquette-broker</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <sourceDirectory>${basedir}/src/main/</sourceDirectory> <!-- Force default maven layout -->
+        <plugins>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>2.1.5</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <!--日期格式;默认值:dd.MM.yyyy '@' HH:mm:ss z;-->
+                    <dateFormat>yyyyMMddHHmmss</dateFormat>
+                    <!--,构建过程中,是否打印详细信息;默认值:false;-->
+                    <verbose>true</verbose>
+                    <!-- ".git"文件路径;默认值:${project.basedir}/.git; -->
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+                    <!--若项目打包类型为pom,是否取消构建;默认值:true;-->
+                    <skipPoms>false</skipPoms>
+                    <!--是否生成"git.properties"文件;默认值:false;-->
+                    <generateGitPropertiesFile>true</generateGitPropertiesFile>
+                    <!--指定"git.properties"文件的存放路径(相对于${project.basedir}的一个路径);-->
+                    <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+                    <!--".git"文件夹未找到时,构建是否失败;若设置true,则构建失败;若设置false,则跳过执行该目标;默认值:true;-->
+                    <failOnNoGitDirectory>false</failOnNoGitDirectory>
+
+                    <!--git描述配置,可选;由JGit提供实现;-->
+                    <gitDescribe>
+                        <!--是否生成描述属性-->
+                        <skip>false</skip>
+                        <!--提交操作未发现tag时,仅打印提交操作ID,-->
+                        <always>false</always>
+                        <!--提交操作ID显式字符长度,最大值为:40;默认值:7;
+                            0代表特殊意义;后面有解释;
+                        -->
+                        <abbrev>7</abbrev>
+                        <!--构建触发时,代码有修改时(即"dirty state"),添加指定后缀;默认值:"";-->
+                        <dirty>-dirty</dirty>
+                        <!--always print using the "tag-commits_from_tag-g_commit_id-maybe_dirty" format, even if "on" a tag.
+                            The distance will always be 0 if you're "on" the tag.
+                        -->
+                        <forceLongFormat>false</forceLongFormat>
+                    </gitDescribe>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>distribution-package</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Specifies the configuration file of the assembly plugin -->
+                            <descriptors>
+                                <descriptor>${basedir}/src/main/assembly/assembly.xml</descriptor>
+                            </descriptors>
+                            <tarLongFileMode>gnu</tarLongFileMode>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>jdeb</artifactId>
+                <groupId>org.vafer</groupId>
+                <version>1.8</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jdeb</goal>
+                        </goals>
+                        <configuration>
+                            <controlDir>${project.basedir}/src/main/deb/control</controlDir>
+                            <skipPOMs>false</skipPOMs>
+                            <deb>${project.build.directory}/im-server-${project.version}.deb</deb>
+                            <dataSet>
+                                <data>
+                                    <src>${project.build.directory}/distribution-${project.version}-bundle-tar.tar.gz</src>
+                                    <type>archive</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/opt/im-server</prefix>
+                                    </mapper>
+                                </data>
+                                <data>
+                                    <src>${project.basedir}/../systemd/im-server.service</src>
+                                    <type>file</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/usr/lib/systemd/system</prefix>
+                                    </mapper>
+                                </data>
+                            </dataSet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+<!--        打包RPM 包需要本地有rpm命令才可以，linux和mac都可以安装rpm。如果是windows需要cygwin安装rpm才可以，如果不需要rpm包，可以把这个plugin注释掉-->
+<!--        打包RPM插件，如果需要打包RPM格式请打开下面注释  -->
+<!--            <plugin>-->
+<!--                <groupId>org.codehaus.mojo</groupId>-->
+<!--                <artifactId>rpm-maven-plugin</artifactId>-->
+<!--                <version>2.2.0</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <id>generate-rpm</id>-->
+<!--                        <goals>-->
+<!--                            <goal>rpm</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                </executions>-->
+<!--                <configuration>-->
+<!--                    <group>Applications/Chat</group>-->
+<!--                    <name>im-server</name>-->
+<!--                    <needarch>noarch</needarch>-->
+<!--                    <targetOS>linux</targetOS>-->
+<!--                    <prefix>/opt/im-server</prefix>-->
+<!--                    <defineStatements>-->
+<!--                        <defineStatement>_unpackaged_files_terminate_build 0</defineStatement>-->
+<!--                    </defineStatements>-->
+<!--                    <copyTo>-->
+<!--                        target/im-server-${project.version}.rpm-->
+<!--                    </copyTo>-->
+<!--                    <requires>-->
+<!--                        <require>java-1.8.0-openjdk-headless</require>-->
+<!--                    </requires>-->
+<!--                    <mappings>-->
+<!--                        <mapping>-->
+<!--                            <directory>/opt/im-server</directory>-->
+<!--                            <filemode>755</filemode>-->
+<!--                            <sources>-->
+<!--                                <source>-->
+<!--                                    <location>${project.build.directory}/distribution-${project.version}-bundle-tar.tar.gz</location>-->
+<!--                                </source>-->
+<!--                            </sources>-->
+<!--                        </mapping>-->
+<!--                        <mapping>-->
+<!--                            <directory>/usr/lib/systemd/system</directory>-->
+<!--                            <filemode>644</filemode>-->
+<!--                            <username>root</username>-->
+<!--                            <groupname>root</groupname>-->
+<!--                            <directoryIncluded>false</directoryIncluded>-->
+<!--                            <sources>-->
+<!--                                <source>-->
+<!--                                    <location>${project.basedir}/../systemd/im-server.service</location>-->
+<!--                                </source>-->
+<!--                            </sources>-->
+<!--                        </mapping>-->
+<!--                    </mappings>-->
+<!--                    <postinstallScriptlet>-->
+<!--                        <scriptFile>${project.basedir}/src/main/rpm/install.sh</scriptFile>-->
+<!--                        <fileEncoding>utf-8</fileEncoding>-->
+<!--                        <filter>true</filter>-->
+<!--                    </postinstallScriptlet>-->
+<!--                    <postremoveScriptlet>-->
+<!--                        <scriptFile>${project.basedir}/src/main/rpm/uninstall.sh</scriptFile>-->
+<!--                        <fileEncoding>utf-8</fileEncoding>-->
+<!--                        <filter>true</filter>-->
+<!--                    </postremoveScriptlet>-->
+<!--                </configuration>-->
+<!--            </plugin>-->
+<!--            打包RPM 结束-->
+
+        </plugins>
+    </build>
+</project>    
