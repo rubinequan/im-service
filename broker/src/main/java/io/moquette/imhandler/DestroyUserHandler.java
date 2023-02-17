@@ -9,8 +9,11 @@
 package io.moquette.imhandler;
 
 import cn.wildfirechat.common.ErrorCode;
+import cn.wildfirechat.pojos.InputDestroyUser;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
+import com.xiaoleilu.hutool.json.JSONObject;
+import com.xiaoleilu.hutool.json.JSONUtil;
 import io.moquette.spi.impl.Qos1PublishHandler;
 import io.netty.buffer.ByteBuf;
 import win.liyufan.im.IMTopic;

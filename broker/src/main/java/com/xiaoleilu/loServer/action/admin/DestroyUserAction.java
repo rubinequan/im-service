@@ -13,6 +13,8 @@ import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.pojos.InputDestroyUser;
 import cn.wildfirechat.proto.WFCMessage;
 import com.google.gson.Gson;
+import com.xiaoleilu.hutool.json.JSONObject;
+import com.xiaoleilu.hutool.json.JSONUtil;
 import com.xiaoleilu.loServer.RestResult;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.Route;
@@ -40,9 +42,11 @@ public class DestroyUserAction extends AdminAction {
             InputDestroyUser inputDestroyUser = getRequestBody(request.getNettyRequest(), InputDestroyUser.class);
             if (inputDestroyUser != null
                 && !StringUtil.isNullOrEmpty(inputDestroyUser.getUserId())) {
-
-                WFCMessage.IDBuf idBuf = WFCMessage.IDBuf.newBuilder().setId(inputDestroyUser.getUserId()).build();
-                sendApiMessage(response, inputDestroyUser.getUserId(), IMTopic.DestroyUserTopic, idBuf.toByteArray(), result -> {
+                // 这里不知道为啥，里面的userId是 {"userId" : ""} 格式，所以需要转一次
+                JSONObject jsonObject = JSONUtil.parseObj(inputDestroyUser.getUserId());
+                String userId = jsonObject.getStr("userId");
+                WFCMessage.IDBuf idBuf = WFCMessage.IDBuf.newBuilder().setId(userId).build();
+                sendApiMessage(response, userId, IMTopic.DestroyUserTopic, idBuf.toByteArray(), result -> {
                     ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
                     return new Result(errorCode1);
                 });
