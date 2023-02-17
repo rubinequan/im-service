@@ -12,7 +12,6 @@ import cn.wildfirechat.common.APIPath;
 import cn.wildfirechat.common.ErrorCode;
 import cn.wildfirechat.pojos.InputDestroyUser;
 import cn.wildfirechat.proto.WFCMessage;
-import com.google.gson.Gson;
 import com.xiaoleilu.hutool.json.JSONObject;
 import com.xiaoleilu.hutool.json.JSONUtil;
 import com.xiaoleilu.loServer.RestResult;
@@ -21,11 +20,9 @@ import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.Request;
 import com.xiaoleilu.loServer.handler.Response;
 import io.netty.handler.codec.http.FullHttpRequest;
-import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.util.internal.StringUtil;
 import win.liyufan.im.IMTopic;
 
-import java.util.Base64;
 
 @Route(APIPath.Destroy_User)
 @HttpMethod("POST")
