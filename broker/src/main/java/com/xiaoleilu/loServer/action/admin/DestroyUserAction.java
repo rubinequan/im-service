@@ -39,9 +39,12 @@ public class DestroyUserAction extends AdminAction {
             InputDestroyUser inputDestroyUser = getRequestBody(request.getNettyRequest(), InputDestroyUser.class);
             if (inputDestroyUser != null
                 && !StringUtil.isNullOrEmpty(inputDestroyUser.getUserId())) {
+                String userId = inputDestroyUser.getUserId();
                 // 这里不知道为啥，里面的userId是 {"userId" : ""} 格式，所以需要转一次
-                JSONObject jsonObject = JSONUtil.parseObj(inputDestroyUser.getUserId());
-                String userId = jsonObject.getStr("userId");
+                if (inputDestroyUser.getUserId().contains("userId")) {
+                    JSONObject jsonObject = JSONUtil.parseObj(inputDestroyUser.getUserId());
+                    userId = jsonObject.getStr("userId");
+                }
                 WFCMessage.IDBuf idBuf = WFCMessage.IDBuf.newBuilder().setId(userId).build();
                 sendApiMessage(response, userId, IMTopic.DestroyUserTopic, idBuf.toByteArray(), result -> {
                     ErrorCode errorCode1 = ErrorCode.fromCode(result[0]);
