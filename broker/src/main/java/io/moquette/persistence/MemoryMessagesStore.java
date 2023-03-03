@@ -19,7 +19,6 @@ package io.moquette.persistence;
 import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
-import com.google.gson.Gson;
 import com.google.protobuf.ByteString;
 import com.hazelcast.core.*;
 import com.hazelcast.util.StringUtil;
@@ -4420,5 +4419,18 @@ public class MemoryMessagesStore implements IMessagesStore {
             sb.append(ch);
         }
         return sb.toString();
+    }
+
+    @Override
+    public ErrorCode saveLog(Integer type, String reason, Integer port, String ip, String serverIp,
+                             String phone, String mac, Boolean flag, String model) {
+        databaseStore.saveLog(type, reason, port, ip, serverIp, phone, mac, flag, model);
+        return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    @Override
+    public ErrorCode saveLog(InputLog logPojo) {
+        databaseStore.saveLog(logPojo);
+        return ErrorCode.ERROR_CODE_SUCCESS;
     }
 }

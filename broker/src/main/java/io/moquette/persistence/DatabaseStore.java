@@ -8,11 +8,11 @@
 
 package io.moquette.persistence;
 
+import cn.wildfirechat.pojos.InputLog;
 import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.util.StringUtil;
@@ -3519,5 +3519,96 @@ public class DatabaseStore {
         }
         int hashId = Math.abs(uid.hashCode())%128;
         return "t_user_messages_" + hashId;
+    }
+
+    public void saveLog(Integer type, String reason, Integer port, String ip, String serverIp,
+                        String phone, String mac, Boolean flag, String model) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+
+            String sql = "insert into t_log (`ip`" +
+                ", `server_ip`" +
+                ", `port`" +
+                ", `mac`" +
+                ", `type`" +
+                ", `flag`" +
+                ", `reason`" +
+                ", `phone`" +
+                ", `model`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            statement = connection.prepareStatement(sql);
+
+            int index = 1;
+
+            statement.setString(index++, ip);
+            statement.setString(index++, serverIp);
+            statement.setInt(index++, port);
+            statement.setString(index++, mac);
+            statement.setInt(index++, type);
+            statement.setBoolean(index++, flag);
+            statement.setString(index++, reason);
+            statement.setString(index++, phone);
+            statement.setString(index++, model);
+            int count = statement.executeUpdate();
+
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement);
+        }
+    }
+
+    public void saveLog(InputLog logPojo) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        try {
+            connection = DBUtil.getConnection();
+            connection.setAutoCommit(false);
+
+            String sql = "insert into t_log (`ip`" +
+                ", `server_ip`" +
+                ", `port`" +
+                ", `mac`" +
+                ", `type`" +
+                ", `flag`" +
+                ", `reason`" +
+                ", `model`" +
+                ", `phone`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+            statement = connection.prepareStatement(sql);
+
+            int index = 1;
+
+            statement.setString(index++, logPojo.getIp());
+            statement.setString(index++, logPojo.getServerIp());
+            statement.setInt(index++, logPojo.getPort());
+            statement.setString(index++, logPojo.getMac());
+            statement.setInt(index++, logPojo.getType());
+            statement.setBoolean(index++, logPojo.getFlag());
+            statement.setString(index++, logPojo.getReason());
+            statement.setString(index++, logPojo.getModel());
+            statement.setString(index++, logPojo.getPhone());
+
+            int count = statement.executeUpdate();
+
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            if (connection != null) {
+                try {
+                    connection.commit();
+                    connection.setAutoCommit(true);
+                } catch (SQLException e1) {
+                    e1.printStackTrace();
+                }
+            }
+            DBUtil.closeDB(connection, statement);
+        }
     }
 }

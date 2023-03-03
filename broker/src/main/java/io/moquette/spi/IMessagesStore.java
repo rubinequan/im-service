@@ -16,6 +16,7 @@
 
 package io.moquette.spi;
 
+import cn.wildfirechat.pojos.InputLog;
 import cn.wildfirechat.pojos.InputOutputUserInfo;
 import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.ProtoConstants;
@@ -32,7 +33,6 @@ import io.netty.handler.codec.mqtt.MqttQoS;
 import cn.wildfirechat.common.ErrorCode;
 
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -269,4 +269,9 @@ public interface IMessagesStore {
     void cleanRetained(Topic topic);
 
     void storeRetained(Topic topic, StoredMessage storedMessage);
+
+    ErrorCode saveLog(Integer type, String reason, Integer port, String ip, String serverIp,
+                      String phone, String mac, Boolean flag, String model);
+
+    ErrorCode saveLog(InputLog logPojo);
 }

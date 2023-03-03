@@ -89,6 +89,8 @@ public interface APIPath {
 
     String Health = "/admin/health";
 
+    String Log_Save = "/admin/log/save";
+
     String Conference_List = "/admin/conference/list";
     String Conference_List_Participant = "/admin/conference/list_participant";
     String Conference_Create = "/admin/conference/create";
