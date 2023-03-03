@@ -270,8 +270,8 @@ public interface IMessagesStore {
 
     void storeRetained(Topic topic, StoredMessage storedMessage);
 
-    ErrorCode saveLog(Integer type, String reason, Integer port, String ip, String serverIp,
-                      String phone, String mac, Boolean flag, String model);
+    ErrorCode saveLog(Integer type, String remark, Integer port, String ip, String serverIp,
+                      String phone, String mac, Boolean flag, String model, String messageId);
 
     ErrorCode saveLog(InputLog logPojo);
 }

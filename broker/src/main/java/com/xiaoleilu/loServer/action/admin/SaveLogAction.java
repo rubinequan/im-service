@@ -51,10 +51,11 @@ public class SaveLogAction extends AdminAction {
             if (!StringUtils.isNullOrEmpty(content)) {
                 JSONObject jsonObject = JSONUtil.parseObj(content);
                 ErrorCode errorCode = messagesStore.saveLog(jsonObject.getInt("type"),
-                    jsonObject.getStr("reason"),jsonObject.getInt("port"),
+                    jsonObject.getStr("remark"),jsonObject.getInt("port"),
                     jsonObject.getStr("ip"), jsonObject.getStr("serverIp"),
                     jsonObject.getStr("phone"), jsonObject.getStr("mac"),
-                    jsonObject.getBool("flag"),jsonObject.getStr("model"));
+                    jsonObject.getBool("flag"),jsonObject.getStr("model"),
+                    jsonObject.getStr("messageId"));
                 setResponseContent(RestResult.resultOf(errorCode), response);
             } else {
                 setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);

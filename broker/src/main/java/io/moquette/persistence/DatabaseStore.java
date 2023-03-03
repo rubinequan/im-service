@@ -3522,7 +3522,7 @@ public class DatabaseStore {
     }
 
     public void saveLog(Integer type, String reason, Integer port, String ip, String serverIp,
-                        String phone, String mac, Boolean flag, String model) {
+                        String phone, String mac, Boolean flag, String model, String messageId) {
         Connection connection = null;
         PreparedStatement statement = null;
         try {
@@ -3534,9 +3534,10 @@ public class DatabaseStore {
                 ", `mac`" +
                 ", `type`" +
                 ", `flag`" +
-                ", `reason`" +
+                ", `remark`" +
                 ", `phone`" +
-                ", `model`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ", `message_id`" +
+                ", `model`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             statement = connection.prepareStatement(sql);
 
@@ -3550,6 +3551,7 @@ public class DatabaseStore {
             statement.setBoolean(index++, flag);
             statement.setString(index++, reason);
             statement.setString(index++, phone);
+            statement.setString(index++, messageId);
             statement.setString(index++, model);
             int count = statement.executeUpdate();
 
@@ -3575,9 +3577,10 @@ public class DatabaseStore {
                 ", `mac`" +
                 ", `type`" +
                 ", `flag`" +
-                ", `reason`" +
+                ", `remark`" +
                 ", `model`" +
-                ", `phone`) values(?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ", `message_id`" +
+                ", `phone`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             statement = connection.prepareStatement(sql);
 
@@ -3589,8 +3592,9 @@ public class DatabaseStore {
             statement.setString(index++, logPojo.getMac());
             statement.setInt(index++, logPojo.getType());
             statement.setBoolean(index++, logPojo.getFlag());
-            statement.setString(index++, logPojo.getReason());
+            statement.setString(index++, logPojo.getRemark());
             statement.setString(index++, logPojo.getModel());
+            statement.setString(index++, logPojo.getMessageId());
             statement.setString(index++, logPojo.getPhone());
 
             int count = statement.executeUpdate();

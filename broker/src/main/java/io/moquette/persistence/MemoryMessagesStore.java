@@ -4422,9 +4422,9 @@ public class MemoryMessagesStore implements IMessagesStore {
     }
 
     @Override
-    public ErrorCode saveLog(Integer type, String reason, Integer port, String ip, String serverIp,
-                             String phone, String mac, Boolean flag, String model) {
-        databaseStore.saveLog(type, reason, port, ip, serverIp, phone, mac, flag, model);
+    public ErrorCode saveLog(Integer type, String remark, Integer port, String ip, String serverIp,
+                             String phone, String mac, Boolean flag, String model, String messageId) {
+        databaseStore.saveLog(type, remark, port, ip, serverIp, phone, mac, flag, model, messageId);
         return ErrorCode.ERROR_CODE_SUCCESS;
     }
 

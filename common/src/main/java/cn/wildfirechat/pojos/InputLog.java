@@ -16,9 +16,10 @@ public class InputLog {
     private String mac;
     private Integer type;
     private Boolean flag;
-    private String reason;
+    private String remark;
     private String phone;
     private String model;
+    private String messageId;
 
     public String getIp() {
         return ip;
@@ -68,14 +69,6 @@ public class InputLog {
         this.flag = flag;
     }
 
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
     public String getPhone() {
         return phone;
     }
@@ -90,5 +83,21 @@ public class InputLog {
 
     public void setModel(String model) {
         this.model = model;
+    }
+
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
+
+    public String getMessageId() {
+        return messageId;
+    }
+
+    public void setMessageId(String messageId) {
+        this.messageId = messageId;
     }
 }
