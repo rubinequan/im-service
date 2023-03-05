@@ -9,6 +9,8 @@
 package com.xiaoleilu.loServer.action;
 
 import com.hazelcast.util.StringUtil;
+import com.xiaoleilu.loServer.OssImgUtil;
+import com.xiaoleilu.loServer.OssVideoUtil;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
 import com.xiaoleilu.loServer.annotation.RequireAuthentication;
 import com.xiaoleilu.loServer.annotation.Route;
@@ -132,7 +134,7 @@ public class UploadFileAction extends Action {
 
                 readHttpDataChunkByChunk(response, decoder, requestId, HttpHeaders.isKeepAlive(request));
                 decoder.destroy();
-                
+
                 if (chunk instanceof LastHttpContent) {
 
                 }
@@ -175,7 +177,6 @@ public class UploadFileAction extends Action {
         try {
             if (data.getHttpDataType() == InterfaceHttpData.HttpDataType.FileUpload) {
                 FileUpload fileUpload = (FileUpload) data;
-
                 String remoteFileName = fileUpload.getFilename();
                 long remoteFileSize = fileUpload.length();
 
@@ -259,7 +260,6 @@ public class UploadFileAction extends Action {
                     }
                 }
 
-
                 String filePath = dir + "/" + (StringUtil.isNullOrEmpty(remoteFileName) ? requestId : remoteFileName);
                 logger.info("the file path is " + filePath);
 
@@ -267,6 +267,8 @@ public class UploadFileAction extends Action {
 
                 logger.info("before write the file");
                 boolean isError = false;
+                boolean img = true;
+                boolean video = true;
                 while (true) {
                     byte[] thunkData;
                     try {
@@ -304,10 +306,29 @@ public class UploadFileAction extends Action {
                         return false;
                     } finally {
                         thunkData = null;
-                        if (isError) {
+                       /* if (isError) {
                             tmpFile.delete();
-                        }
+                        }*/
                     }
+                }
+                if(remoteFileName.indexOf(".jpg") >= 0 || remoteFileName.indexOf(".png") >= 0){//图片审核
+                    if(OssImgUtil.getScene(tmpFile)){
+                        logger.info("img violation");
+                        response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                        response.setContent("图片违规" );
+                        return false;
+                    }
+                }
+                if(remoteFileName.indexOf(".mp4") >= 0){//图片审核
+                    if(OssVideoUtil.getScene(tmpFile)){
+                        logger.info("video violation");
+                        response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                        response.setContent("视频违规" );
+                        return false;
+                    }
+                }
+                if (isError) {
+                    tmpFile.delete();
                 }
             } else if(data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
                 Attribute attribute = (Attribute)data;
