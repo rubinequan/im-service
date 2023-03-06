@@ -12,7 +12,7 @@ import cn.wildfirechat.pojos.MessagePayload;
 import cn.wildfirechat.pojos.OutputClient;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
-import com.google.gson.Gson;
+import com.alibaba.fastjson.JSON;
 import com.hazelcast.util.StringUtil;
 import io.moquette.BrokerConstants;
 import io.moquette.persistence.MemorySessionStore;
@@ -182,6 +182,16 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                         }
                     }
                 }
+                try {
+                    // 消息文本检测
+                    if(message.getContent().getType() == ProtoConstants.ContentType.Text) {
+                        if (!OssMessageUtil.getScene(message.getContent().getSearchableContent())) {
+                            return ErrorCode.ERROR_CODE_INVALID_MESSAGE;
+                        }
+                    }
+                } catch (Exception e) {
+                    return ErrorCode.ERROR_CODE_INVALID_MESSAGE;
+                }
             }
 
             long timestamp = System.currentTimeMillis();
@@ -299,7 +309,6 @@ public class SendMessageHandler extends IMHandler<WFCMessage.Message> {
                     }
                 }
             }
-
             if (errorCode == ErrorCode.ERROR_CODE_SUCCESS) {
                 if(!ignoreMsg) {
                     saveAndPublish(fromUser, clientID, message, requestSourceType);

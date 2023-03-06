@@ -84,7 +84,10 @@ public enum ErrorCode {
     ERROR_CODE_NOT_IMPLEMENT(254, "not implement"),
 
 
-    ERROR_CODE_SUCCESS_GZIPED(255, "success withe gzip response"),;
+    ERROR_CODE_SUCCESS_GZIPED(255, "success withe gzip response"),
+    TEXT_VIOLATIONS(256, "你发送的文本已违规，请注意封号"),
+
+    ;
 
     public int code;
     public String msg;

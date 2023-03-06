@@ -150,9 +150,9 @@ public class AdminHttpUtils extends JsonUtils {
                 in.close();
 
                 content = sb.toString();
-                if(!OssMessageUtil.getScene(content)){
+                /*if(!OssMessageUtil.getScene(content)){
                     throw new Exception("你发送的文本已违规，请注意封号");
-                }
+                }*/
                 LOG.info("http request response content: {}", content);
             }
 
