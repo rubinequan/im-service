@@ -16,7 +16,6 @@ import com.xiaoleilu.loServer.annotation.RequireAuthentication;
 import com.xiaoleilu.loServer.annotation.Route;
 import com.xiaoleilu.loServer.handler.*;
 import io.moquette.server.config.MediaServerConfig;
-import io.moquette.spi.impl.security.AES;
 import io.moquette.spi.security.DES;
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.http.*;
@@ -311,25 +310,38 @@ public class UploadFileAction extends Action {
                         }*/
                     }
                 }
-                if(remoteFileName.indexOf(".jpg") >= 0 || remoteFileName.indexOf(".png") >= 0){//图片审核
-                    if(OssImgUtil.getScene(tmpFile)){
-                        logger.info("img violation");
-                        response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                        response.setContent("图片违规" );
-                        return false;
+                try {
+                    System.out.println("文件检测：" + remoteFileName);
+                    if(remoteFileName.indexOf(".jpg") >= 0 || remoteFileName.indexOf(".png") >= 0){//图片审核
+                        if(OssImgUtil.getScene(tmpFile)){
+                            logger.info("img violation");
+                            response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                            response.setContent("图片违规" );
+                            isError = true;
+                            return false;
+                        }
+                    }
+                    if(remoteFileName.indexOf(".mp4") >= 0){//视频审核
+                        if(!OssVideoUtil.getAsyncFlag(tmpFile)){
+                            logger.info("video violation");
+                            response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                            response.setContent("视频违规" );
+                            isError = true;
+                            System.out.println("视频违规-------------");
+                            return false;
+                        }
+                    }
+                } catch (Exception e) {
+                    response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                    response.setContent("文件检测失败" );
+                    isError = true;
+                    return false;
+                } finally {
+                    if (isError) {
+                        tmpFile.delete();
                     }
                 }
-                if(remoteFileName.indexOf(".mp4") >= 0){//图片审核
-                    if(OssVideoUtil.getScene(tmpFile)){
-                        logger.info("video violation");
-                        response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                        response.setContent("视频违规" );
-                        return false;
-                    }
-                }
-                if (isError) {
-                    tmpFile.delete();
-                }
+
             } else if(data.getHttpDataType() == InterfaceHttpData.HttpDataType.Attribute) {
                 Attribute attribute = (Attribute)data;
                 if(attribute.getName().equals("token")) {
