@@ -43,9 +43,9 @@ import win.liyufan.im.*;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -4432,5 +4432,39 @@ public class MemoryMessagesStore implements IMessagesStore {
     public ErrorCode saveLog(InputLog logPojo) {
         databaseStore.saveLog(logPojo);
         return ErrorCode.ERROR_CODE_SUCCESS;
+    }
+
+    private ThreadPoolExecutor threadPool = new ThreadPoolExecutor(3,
+        4,
+        1,
+        TimeUnit.SECONDS, new LinkedBlockingQueue<>(10),
+        Executors.defaultThreadFactory(),
+        new ThreadPoolExecutor.AbortPolicy());
+
+    @Override
+    public List<PojoSearchMessage> searchMessage(String message) {
+        // 模糊查询，线程异步
+        String tablePrefix = "t_messages_";
+        // 1.查询 1-10张表的数据
+        CompletableFuture<List<PojoSearchMessage>> one = CompletableFuture.supplyAsync(() ->
+            databaseStore.searchMessage(tablePrefix, message, 0, 11));
+        // 查询 11-20张表的数据
+        CompletableFuture<List<PojoSearchMessage>> two = CompletableFuture.supplyAsync(() ->
+            databaseStore.searchMessage(tablePrefix, message, 11, 21));
+        // 查询21-35张表的数据
+        CompletableFuture<List<PojoSearchMessage>> three = CompletableFuture.supplyAsync(() ->
+            databaseStore.searchMessage(tablePrefix, message, 21, 36));
+        CompletableFuture.allOf(one, two, three).join();
+        try {
+            List<PojoSearchMessage> pojoSearchMessages = one.get();
+            List<PojoSearchMessage> pojoSearchMessages1 = two.get();
+            List<PojoSearchMessage> pojoSearchMessages2 = three.get();
+            pojoSearchMessages.addAll(pojoSearchMessages1);
+            pojoSearchMessages.addAll(pojoSearchMessages2);
+            return pojoSearchMessages;
+        } catch (Exception e) {
+            System.out.println("查询日志异常:" + e.getLocalizedMessage());
+            throw new RuntimeException("查询日志异常");
+        }
     }
 }

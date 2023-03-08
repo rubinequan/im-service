@@ -37,15 +37,14 @@ public class SaveLogAction extends AdminAction {
     @Override
     public boolean action(Request request, Response response) {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
-            // 不知道为啥， 自己创建的InputLog类，会报NoClassDefFoundError和ClassNotFoundException错误
-            /*InputLog logPojo = getRequestBody(request.getNettyRequest(), InputLog.class);
+            InputLog logPojo = getRequestBody(request.getNettyRequest(), InputLog.class);
             if (null != logPojo) {
                 ErrorCode errorCode = messagesStore.saveLog(logPojo);
                 setResponseContent(RestResult.resultOf(errorCode), response);
             } else {
                 setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
-            }*/
-            FullHttpRequest fullHttpRequest = (FullHttpRequest) request.getNettyRequest();
+            }
+            /*FullHttpRequest fullHttpRequest = (FullHttpRequest) request.getNettyRequest();
             byte[] bytes = Utils.readBytesAndRewind(fullHttpRequest.content());
             String content = new String(bytes, StandardCharsets.UTF_8);
             if (!StringUtils.isNullOrEmpty(content)) {
@@ -59,7 +58,7 @@ public class SaveLogAction extends AdminAction {
                 setResponseContent(RestResult.resultOf(errorCode), response);
             } else {
                 setResponseContent(RestResult.resultOf(ErrorCode.INVALID_PARAMETER), response);
-            }
+            }*/
 
         }
         return true;

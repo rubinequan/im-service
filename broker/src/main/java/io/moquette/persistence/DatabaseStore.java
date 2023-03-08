@@ -9,6 +9,7 @@
 package io.moquette.persistence;
 
 import cn.wildfirechat.pojos.InputLog;
+import cn.wildfirechat.pojos.PojoSearchMessage;
 import cn.wildfirechat.pojos.SystemSettingPojo;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
@@ -16,6 +17,7 @@ import cn.wildfirechat.server.ThreadPoolExecutorWrapper;
 import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.util.StringUtil;
+import com.qiniu.util.StringUtils;
 import com.xiaoleilu.loServer.model.FriendData;
 import io.moquette.server.Server;
 import io.moquette.spi.ClientSession;
@@ -3569,7 +3571,7 @@ public class DatabaseStore {
         PreparedStatement statement = null;
         try {
             connection = DBUtil.getConnection();
-            connection.setAutoCommit(false);
+            //connection.setAutoCommit(false);
 
             String sql = "insert into t_log (`ip`" +
                 ", `server_ip`" +
@@ -3578,9 +3580,9 @@ public class DatabaseStore {
                 ", `type`" +
                 ", `flag`" +
                 ", `remark`" +
-                ", `model`" +
+                ", `phone`" +
                 ", `message_id`" +
-                ", `phone`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                ", `model`) values(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
             statement = connection.prepareStatement(sql);
 
@@ -3593,9 +3595,9 @@ public class DatabaseStore {
             statement.setInt(index++, logPojo.getType());
             statement.setBoolean(index++, logPojo.getFlag());
             statement.setString(index++, logPojo.getRemark());
-            statement.setString(index++, logPojo.getModel());
-            statement.setString(index++, logPojo.getMessageId());
             statement.setString(index++, logPojo.getPhone());
+            statement.setString(index++, logPojo.getMessageId());
+            statement.setString(index++, logPojo.getModel());
 
             int count = statement.executeUpdate();
 
@@ -3604,15 +3606,67 @@ public class DatabaseStore {
             e.printStackTrace();
             Utility.printExecption(LOG, e, RDBS_Exception);
         } finally {
-            if (connection != null) {
+            /*if (connection != null) {
                 try {
                     connection.commit();
                     connection.setAutoCommit(true);
                 } catch (SQLException e1) {
                     e1.printStackTrace();
                 }
-            }
+            }*/
             DBUtil.closeDB(connection, statement);
         }
+    }
+
+    public List<PojoSearchMessage> searchMessage(String tablePrefix, String message, int start, int end) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+        ResultSet rs = null;
+        List<PojoSearchMessage> list = new ArrayList<>();
+        try {
+            connection = DBUtil.getConnection();
+            for (int i = start; i < end; i++) {
+                String sql = "select m.`_from`, u.`_mobile`, u.`_display_name`, log.`ip`, log.`port`, log.`phone`,m.`_searchable_key`," +
+                    "m.`_target`, target.`_mobile`, target.`_display_name` from " + (tablePrefix+i) +
+                    " m left join t_user u ON m.`_from`= u.`_uid` left join t_user target on m.`_target`= target.`_uid` " +
+                    "left join t_log log on m.`_mid`=log.message_id " +
+                    "where m.`_content_type` = 1" +
+                    (StringUtils.isNullOrEmpty(message) ? "" : " AND m.`_searchable_key` like ?");
+
+                statement = connection.prepareStatement(sql);
+                if (!StringUtils.isNullOrEmpty(message)) {
+                    int index = 1;
+                    statement.setString(index++, "%" + message + "%");
+                }
+                rs = statement.executeQuery();
+                while (rs.next()) {
+                    PojoSearchMessage out = new PojoSearchMessage();
+                    int index = 1;
+
+                    out.setSenderUid(rs.getString(index++));
+                    out.setSenderPhone(rs.getString(index++));
+                    out.setSenderName(rs.getString(index++));
+                    out.setSenderIp(rs.getString(index++));
+                    out.setSenderPort(rs.getString(index++));
+                    String string = rs.getString(index++);
+                    if (StringUtils.isNullOrEmpty(out.getSenderPhone())) {
+                        out.setSenderPhone(string);
+                    }
+                    out.setMessage(rs.getString(index++));
+                    out.setReceiverUid(rs.getString(index++));
+                    out.setReceiverPhone(rs.getString(index++));
+                    out.setReceiverName(rs.getString(index++));
+
+                    list.add(out);
+                }
+            }
+        } catch (SQLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            Utility.printExecption(LOG, e, RDBS_Exception);
+        } finally {
+            DBUtil.closeDB(connection, statement, rs);
+        }
+        return list;
     }
 }

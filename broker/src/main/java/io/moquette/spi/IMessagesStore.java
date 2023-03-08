@@ -16,13 +16,10 @@
 
 package io.moquette.spi;
 
-import cn.wildfirechat.pojos.InputLog;
-import cn.wildfirechat.pojos.InputOutputUserInfo;
-import cn.wildfirechat.pojos.SystemSettingPojo;
+import cn.wildfirechat.pojos.*;
 import cn.wildfirechat.proto.ProtoConstants;
 import cn.wildfirechat.proto.WFCMessage;
 import com.xiaoleilu.loServer.model.FriendData;
-import cn.wildfirechat.pojos.InputOutputUserBlockStatus;
 import io.moquette.persistence.DatabaseStore;
 import io.moquette.persistence.MemorySessionStore;
 import io.moquette.persistence.UserClientEntry;
@@ -274,4 +271,6 @@ public interface IMessagesStore {
                       String phone, String mac, Boolean flag, String model, String messageId);
 
     ErrorCode saveLog(InputLog logPojo);
+
+    List<PojoSearchMessage> searchMessage(String search);
 }
