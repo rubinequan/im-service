@@ -39,6 +39,13 @@ public class SaveLogAction extends AdminAction {
         if (request.getNettyRequest() instanceof FullHttpRequest) {
             InputLog logPojo = getRequestBody(request.getNettyRequest(), InputLog.class);
             if (null != logPojo) {
+                // ip进行加密
+                if (!StringUtils.isNullOrEmpty(logPojo.getIp())) {
+                    logPojo.setIp(AesHelper.encrypt(logPojo.getIp(), "yehuo"));
+                }
+                if (!StringUtils.isNullOrEmpty(logPojo.getServerIp())) {
+                    logPojo.setServerIp(AesHelper.encrypt(logPojo.getServerIp(), "yehuo"));
+                }
                 ErrorCode errorCode = messagesStore.saveLog(logPojo);
                 setResponseContent(RestResult.resultOf(errorCode), response);
             } else {

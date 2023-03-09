@@ -18,6 +18,7 @@ import com.hazelcast.core.HazelcastInstance;
 import com.hazelcast.core.MultiMap;
 import com.hazelcast.util.StringUtil;
 import com.qiniu.util.StringUtils;
+import com.xiaoleilu.loServer.action.admin.AesHelper;
 import com.xiaoleilu.loServer.model.FriendData;
 import io.moquette.server.Server;
 import io.moquette.spi.ClientSession;
@@ -3627,7 +3628,7 @@ public class DatabaseStore {
             connection = DBUtil.getConnection();
             for (int i = start; i < end; i++) {
                 String sql = "select m.`_from`, u.`_mobile`, u.`_display_name`, log.`ip`, log.`port`, log.`phone`,m.`_searchable_key`," +
-                    "m.`_target`, target.`_mobile`, target.`_display_name` from " + (tablePrefix+i) +
+                    "m.`_target`, target.`_mobile`, target.`_display_name`,date_format(m.`_dt`,\'%Y-%m-%d %H:%i:%s\') from " + (tablePrefix+i) +
                     " m left join t_user u ON m.`_from`= u.`_uid` left join t_user target on m.`_target`= target.`_uid` " +
                     "left join t_log log on m.`_mid`=log.message_id " +
                     "where m.`_content_type` = 1" +
@@ -3646,7 +3647,11 @@ public class DatabaseStore {
                     out.setSenderUid(rs.getString(index++));
                     out.setSenderPhone(rs.getString(index++));
                     out.setSenderName(rs.getString(index++));
-                    out.setSenderIp(rs.getString(index++));
+                    // 解密
+                    String ip = rs.getString(index++);
+                    if (!StringUtils.isNullOrEmpty(ip)) {
+                        out.setSenderIp(AesHelper.decrypt(ip, "yehuo"));
+                    }
                     out.setSenderPort(rs.getString(index++));
                     String string = rs.getString(index++);
                     if (StringUtils.isNullOrEmpty(out.getSenderPhone())) {
@@ -3656,7 +3661,10 @@ public class DatabaseStore {
                     out.setReceiverUid(rs.getString(index++));
                     out.setReceiverPhone(rs.getString(index++));
                     out.setReceiverName(rs.getString(index++));
-
+                    String date = rs.getString(index++);
+                    if (date != null) {
+                        out.setSenderTime(date);
+                    }
                     list.add(out);
                 }
             }

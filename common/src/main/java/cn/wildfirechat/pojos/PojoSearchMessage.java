@@ -18,6 +18,7 @@ public class PojoSearchMessage {
     String receiverUid;
     String receiverPhone;
     String receiverName;
+    String senderTime;
 
     public String getSenderUid() {
         return senderUid;
@@ -89,5 +90,13 @@ public class PojoSearchMessage {
 
     public void setReceiverName(String receiverName) {
         this.receiverName = receiverName;
+    }
+
+    public String getSenderTime() {
+        return senderTime;
+    }
+
+    public void setSenderTime(String senderTime) {
+        this.senderTime = senderTime;
     }
 }
