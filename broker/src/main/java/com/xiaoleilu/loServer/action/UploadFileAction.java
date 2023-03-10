@@ -314,11 +314,11 @@ public class UploadFileAction extends Action {
                     }
                 }
                 try {
+                    System.out.println("文件检测：" + remoteFileName);
                     List<String> pictureList = Arrays.asList(".PNG", ".JPG", ".JPEG", ".BMP", ".GIF", ".WEBP");
                     // 图片检测
                     for (String e : pictureList) {
                         if (remoteFileName.toUpperCase().endsWith(e)) {
-                            System.out.println("图片检测：" + remoteFileName);
                             if(OssImgUtil.getScene(tmpFile)){
                                 logger.info("img violation");
                                 response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
@@ -333,7 +333,6 @@ public class UploadFileAction extends Action {
                     // 视频检测
                     for (String e : videoList) {
                         if (remoteFileName.toUpperCase().endsWith(e)) {
-                            System.out.println("视频检测：" + remoteFileName);
                             if(!OssVideoUtil.getAsyncFlag(tmpFile)){
                                 logger.info("video violation");
                                 response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
