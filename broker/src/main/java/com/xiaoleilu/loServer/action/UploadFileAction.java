@@ -9,6 +9,7 @@
 package com.xiaoleilu.loServer.action;
 
 import com.hazelcast.util.StringUtil;
+import com.sun.imageio.plugins.jpeg.JPEG;
 import com.xiaoleilu.loServer.OssImgUtil;
 import com.xiaoleilu.loServer.OssVideoUtil;
 import com.xiaoleilu.loServer.annotation.HttpMethod;
@@ -26,7 +27,9 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.RandomAccessFile;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import static com.xiaoleilu.loServer.handler.HttpResponseHelper.getFileExt;
@@ -311,24 +314,35 @@ public class UploadFileAction extends Action {
                     }
                 }
                 try {
-                    System.out.println("文件检测：" + remoteFileName);
-                    if(remoteFileName.indexOf(".jpg") >= 0 || remoteFileName.indexOf(".png") >= 0){//图片审核
-                        if(OssImgUtil.getScene(tmpFile)){
-                            logger.info("img violation");
-                            response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                            response.setContent("图片违规" );
-                            isError = true;
-                            return false;
+                    List<String> pictureList = Arrays.asList(".PNG", ".JPG", ".JPEG", ".BMP", ".GIF", ".WEBP");
+                    // 图片检测
+                    for (String e : pictureList) {
+                        if (remoteFileName.toUpperCase().endsWith(e)) {
+                            System.out.println("图片检测：" + remoteFileName);
+                            if(OssImgUtil.getScene(tmpFile)){
+                                logger.info("img violation");
+                                response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                                response.setContent("图片违规" );
+                                isError = true;
+                                return false;
+                            }
+                            break;
                         }
                     }
-                    if(remoteFileName.indexOf(".mp4") >= 0){//视频审核
-                        if(!OssVideoUtil.getAsyncFlag(tmpFile)){
-                            logger.info("video violation");
-                            response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
-                            response.setContent("视频违规" );
-                            isError = true;
-                            System.out.println("视频违规-------------");
-                            return false;
+                    List<String> videoList = Arrays.asList(".MP4", ".AVI", ".FLV", ".MPG", ".ASF", ".WMV", ".MOV", ".WMA", ".RMVB", ".RM", ".FLASH", ".TS");
+                    // 视频检测
+                    for (String e : videoList) {
+                        if (remoteFileName.toUpperCase().endsWith(e)) {
+                            System.out.println("视频检测：" + remoteFileName);
+                            if(!OssVideoUtil.getAsyncFlag(tmpFile)){
+                                logger.info("video violation");
+                                response.setStatus(HttpResponseStatus.INTERNAL_SERVER_ERROR);
+                                response.setContent("视频违规" );
+                                isError = true;
+                                System.out.println("视频违规-------------");
+                                return false;
+                            }
+                            break;
                         }
                     }
                 } catch (Exception e) {
